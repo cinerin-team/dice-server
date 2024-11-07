@@ -21,6 +21,16 @@ def init_db():
     conn.close()
 
 
+# Régi bejegyzések törlése
+def delete_old_entries():
+    one_month_ago = datetime.now() - timedelta(days=30)
+    conn = sqlite3.connect('devices.db')
+    cursor = conn.cursor()
+    cursor.execute('DELETE FROM devices WHERE date < ?', (one_month_ago.strftime('%Y-%m-%d'),))
+    conn.commit()
+    conn.close()
+
+
 # Alkalmazás inicializáláskor meghívja az adatbázist
 init_db()
 
@@ -31,6 +41,9 @@ def register_device():
     data = request.json
     mac_address = data.get('mac_address')
     date = data.get('date', datetime.now().strftime('%Y-%m-%d'))
+
+    # Töröljük a régi bejegyzéseket
+    delete_old_entries()
 
     conn = sqlite3.connect('devices.db')
     cursor = conn.cursor()
